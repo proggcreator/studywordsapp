@@ -1,0 +1,21 @@
+<!--basic page for topics-->
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{% static "topic/head.css"%}">
+    <title>Topic_Detail</title>
+</head>
+<body>
+<h1>{{topic.name}}</h1>
+<h2>{{ topic.pk }}</h2>
+
+
+<form action="{% url "start" idtopic=topic.pk idword=0 %}">
+   <button>Учить слова</button>
+  </form>
+
+
+</body>
+</html>

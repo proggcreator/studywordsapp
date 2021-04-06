@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <script type="text/javascript" src= "http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <link rel="stylesheet" href="{% static "//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"%}">
+        <script type="text/javascript" src="{% static "timer/inc/TimeCircles.js"%}"></script>
+        <link rel="stylesheet" href="{% static "timer/inc/TimeCircles.css"%}">
+
+</head>
+<body>
+ <div class="container">
+            <div id="CountDownTimer" data-timer="10" style="width: 1000px; height: 250px;"></div>
+
+            <hr>
+
+ </div>
+
+ <script>
+            $("#DateCountdown").TimeCircles();
+            $("#CountDownTimer").TimeCircles({ time: { Days: { show: false }, Hours: { show: false },Minutes: { show: false } }});
+            $("#PageOpenTimer").TimeCircles();
+            $("#CountDownTimer").TimeCircles({count_past_zero: false}).addListener(countdownComplete);
+
+            var updateTime = function(){
+                var date = $("#date").val();
+                var time = $("#time").val();
+                var datetime = date + ' ' + time + ':00';
+                $("#DateCountdown").data('date', datetime).TimeCircles().start();
+            }
+            $("#date").change(updateTime).keyup(updateTime);
+            $("#time").change(updateTime).keyup(updateTime);
+
+            // Start and stop are methods applied on the public TimeCircles instance
+            $(".startTimer").click(function() {
+                $("#CountDownTimer").TimeCircles().start();
+            });
+            $(".stopTimer").click(function() {
+                $("#CountDownTimer").TimeCircles().stop();
+            });
+
+            // Fade in and fade out are examples of how chaining can be done with TimeCircles
+            $(".fadeIn").click(function() {
+                $("#PageOpenTimer").fadeIn();
+            });
+            $(".fadeOut").click(function() {
+                $("#PageOpenTimer").fadeOut();
+            });
+
+
+
+function countdownComplete(unit, value, total){
+	if(total<=0){
+    var wait=setTimeout("document.gettime.submit();",0);
+	}
+}
+
+        </script>
+
+
+<form name = "gettime" action="{% url "start" idtopic=wordone.id_topic_id idword=wordone.id %}">
+     <table>
+
+    </table>
+   <button>Next</button>
+  </form>
+
+<h1>{{wordone.name}}</h1>
+<form method="POST">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table}}
+    </table>
+    <input type="submit" value="Send" >
+</form>
+
+
+
+</body>
+</html>
