@@ -5,11 +5,13 @@
     <title>Главная</title>
 </head>
 <body>
-Один
-{{ userr }}
-Все
-{{ cout }}
-
+<div id="error-message">{{text}}</div>
+<script>
+     $('#error-message').show();
+ setTimeout(function(){
+    $('#error-message').hide();
+ }, 2000);
+</script>
 {% for topic in topic_list %}
     <br>
     <h1><a href="{% url "topic_detail" pk=topic.pk %}">{{ topic.name }}</a></h1>

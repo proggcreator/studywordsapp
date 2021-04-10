@@ -32,7 +32,7 @@ class Userr (models.Model):
 class State(models.Model):
     id_user = models.ForeignKey(Userr, on_delete=models.CASCADE)
     id_word = models.ForeignKey(Word, on_delete=models.CASCADE)
-    status = models.CharField(max_length=1)
+    status = models.BooleanField()
 
 
 

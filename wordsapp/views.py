@@ -1,70 +1,113 @@
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
+from django.urls import reverse
 from allauth.account.models import EmailAddress
+from django.http import HttpResponseRedirect, HttpResponse
 from .forms import UserForm
+from django.http import Http404
 from django.shortcuts import get_list_or_404
-from .models import Topic, Word, Userr
+from .models import Topic, Word, Userr, State
 from django.views.generic.base import View
 from django.shortcuts import render, get_object_or_404
 
+
 def index(request):
+    return render(request, "index.html")
 
-    return render(request,"index.html")
 
-def topics(request):
-    user_au = User.objects.get(username=request.user) #если новый пользователь добавляем в Userr
+def topics(request,text = " "):
+    user_au = User.objects.get(username=request.user)  # если новый пользователь добавляем в Userr
     cout = Userr.objects.count()
     if user_au.id > cout:
         us = Userr()
         us.id_login = user_au.id
         us.save()
-    #users = Users.objects.all()
-
     topics = Topic.objects.all()
-    context = {"topic_list" : topics,"userr":user_au.id,"cout":cout}
-    return render(request,"topic/topic_list.html",context)
+    context = {"topic_list": topics, "userr": user_au.id, "cout": cout,"text":text}
+    return render(request, "topic/topic_list.html", context)
+
 
 def topic(request):
-    return render(request,"topic/"+request.Topic.urls)
+    return render(request, "topic/" + request.Topic.urls)
 
 
 def topic_detail(request, pk):
     topic = get_object_or_404(Topic, pk=pk)
     return render(request, 'topic/topic_detail.html', {'topic': topic})
 
+
 def mainpage(request):
     return render(request, 'topic/learn/start.html')
 
-class Words_list(View):
-    def __init__(self,idtopic,idword):
-        self.i = 1
-        self.dictwords = Word.objects.raw('SELECT * FROM wordsapp_word WHERE id_topic_id = %s AND id > %s ', [idtopic,idword])
 
-    def nextval (self):
-        self.i =self.i+1
-        value = self.dictwords[self.i-1]
+class Words_list(View):
+    def __init__(self, idtopic, idword):
+        self.i = 1
+        self.dictwords = Word.objects.raw('SELECT * FROM wordsapp_word WHERE id_topic_id = %s AND id > %s ',
+                                          [idtopic, idword])
+
+    def nextval(self):
+        self.i = self.i + 1
+        value = self.dictwords[self.i - 1]
         return value
 
-def start(request,idtopic,idword):
-    x = Word.objects.raw('SELECT * FROM wordsapp_word WHERE id_topic_id = %s AND id > %s ', [idtopic,idword])[0]
+
+def start(request, idtopic, idword):
+    endstudy = False
+    curruser = request.user.id
+    numword = Word.objects.filter(id_topic=idtopic).filter(id__gte=idword).filter(state__id_user_id=curruser).filter(
+            state__status=False)
+    if numword.count() >0:
+        idword = numword[0].id
+
+    list_newword = Word.objects.filter(id__gte=idword).filter(id_topic=idtopic).exclude(state__status=True)
+    # обработка ошибки если последнее слово
+
+    try:
+        newword = list_newword[0]
+        nextword = list_newword[1]
+    except IndexError:
+        endstudy = True
+
+        #все слова выученны скрыть надпись на выбор темы
+        #text = "Все слова данного расдела выученны!"
+        #return render(request, 'topic/learn/start.html',{"text":text} )
+
     ans = ""
     userform = UserForm()
+    #если все слова выученны перенаправляем на выбор раздела
+    if endstudy == True :
+        return HttpResponseRedirect(reverse('topics',))
     if request.method == "POST":
-        name = request.POST.get("name")
-        if name == x.translate:
-            curruser = User.objects.get(username=request.user.id)
-            Userr.objects.filter(id=curruser).update(balls=+10)
+        usword = request.POST.get("name")
+        if usword == newword.translate:
+            num = Userr.objects.get(id=curruser).balls
+            Userr.objects.filter(id=curruser).update(balls=num + 10)
             ans = "ВЕРНО"
-            context = {"wordone": x, "form": userform, "answer": ans,"name":name,"x":x}
-            return render(request, 'topic/learn/start.html',context)
+            #
+            if State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser).count()>0:
+                st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
+                st.status = True
+                st.save()
+            else:
+                State.objects.create(id_user_id=curruser, id_word_id=idword, status=True)
+            #
+            context = {"wordone": nextword, "form": userform, "answer": ans}
+            return render(request, 'topic/learn/start.html', context)
         else:
             ans = "НЕВЕРНО"
-            context = {"wordone": x, "form": userform, "answer": ans,"name":name,"x":x}
-            return render(request, 'topic/learn/start.html',context)
-    else:
-        context = {"wordone":x,"form": userform,"answer":ans,"xtranslate":x.translate}
-    return render(request, 'topic/learn/start.html',context)
+            #
+            if State.objects.filter(id_word_id=newword.id).filter( id_user_id=curruser).count() > 0:
+                st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
+                st.status = False
+                st.save()
+            else:
+                State.objects.create(id_user_id=curruser, id_word_id=idword, status=False)
+            #
+            context = {"wordone": nextword, "form": userform, "answer": ans}
+            return render(request, 'topic/learn/start.html', context)
 
 
-
+    context = {"wordone": newword, "form": userform, "answer": ans}
+    return render(request, 'topic/learn/start.html', context)
