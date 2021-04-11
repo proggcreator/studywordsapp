@@ -54,21 +54,28 @@ class Words_list(View):
 
 
 def start(request, idtopic, idword):
+
     endstudy = False
     curruser = request.user.id
-    numword = Word.objects.filter(id_topic=idtopic).filter(id__gte=idword).filter(state__id_user_id=curruser).filter(
-            state__status=False)
-    if numword.count() >0:
-        idword = numword[0].id
+    words_in_state_topic = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id = curruser)
+    #если только начал изучать тему
+    if words_in_state_topic.count() == 0:
+        all_words_topic = Word.objects.filter(id_topic=idtopic)
+        for i in all_words_topic:
+            State.objects.create(id_user_id=curruser,id_word_id=i.id,status=False)
 
-    list_newword = Word.objects.filter(id__gte=idword).filter(id_topic=idtopic).exclude(state__status=True)
+
+    list_newword = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id=curruser,state__status = False)
     # обработка ошибки если последнее слово
-
     try:
-        newword = list_newword[0]
         nextword = list_newword[1]
     except IndexError:
         endstudy = True
+    #перенаправление для выбора темы когда все слова выученны
+    if endstudy == True :
+        return HttpResponseRedirect(reverse('topics',))
+    
+    newword = list_newword[0]
 
         #все слова выученны скрыть надпись на выбор темы
         #text = "Все слова данного расдела выученны!"
@@ -77,8 +84,7 @@ def start(request, idtopic, idword):
     ans = ""
     userform = UserForm()
     #если все слова выученны перенаправляем на выбор раздела
-    if endstudy == True :
-        return HttpResponseRedirect(reverse('topics',))
+
     if request.method == "POST":
         usword = request.POST.get("name")
         if usword == newword.translate:
@@ -86,24 +92,22 @@ def start(request, idtopic, idword):
             Userr.objects.filter(id=curruser).update(balls=num + 10)
             ans = "ВЕРНО"
             #
-            if State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser).count()>0:
-                st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
-                st.status = True
-                st.save()
-            else:
-                State.objects.create(id_user_id=curruser, id_word_id=idword, status=True)
+
+            st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
+            st.status = True
+            st.save()
+
             #
             context = {"wordone": nextword, "form": userform, "answer": ans}
             return render(request, 'topic/learn/start.html', context)
         else:
             ans = "НЕВЕРНО"
             #
-            if State.objects.filter(id_word_id=newword.id).filter( id_user_id=curruser).count() > 0:
-                st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
-                st.status = False
-                st.save()
-            else:
-                State.objects.create(id_user_id=curruser, id_word_id=idword, status=False)
+
+            st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
+            st.status = False
+            st.save()
+
             #
             context = {"wordone": nextword, "form": userform, "answer": ans}
             return render(request, 'topic/learn/start.html', context)
