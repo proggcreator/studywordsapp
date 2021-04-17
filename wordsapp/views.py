@@ -2,6 +2,7 @@ from django.dispatch import receiver
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 from django.urls import reverse
+import datetime
 from allauth.account.models import EmailAddress
 from django.http import HttpResponseRedirect, HttpResponse
 from .forms import UserForm
@@ -10,6 +11,7 @@ from django.shortcuts import get_list_or_404
 from .models import Topic, Word, Userr, State
 from django.views.generic.base import View
 from django.shortcuts import render, get_object_or_404
+import time
 
 
 def index(request):
@@ -54,7 +56,6 @@ class Words_list(View):
 
 
 def start(request, idtopic, idword):
-
     endstudy = False
     curruser = request.user.id
     words_in_state_topic = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id = curruser)
@@ -68,29 +69,32 @@ def start(request, idtopic, idword):
     list_newword = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id=curruser,state__status = False)
     # обработка ошибки если последнее слово
     try:
-        nextword = list_newword[1]
+        newword = list_newword[0]
     except IndexError:
         endstudy = True
     #перенаправление для выбора темы когда все слова выученны
     if endstudy == True :
         return HttpResponseRedirect(reverse('topics',))
-    
-    newword = list_newword[0]
+    try:
+        nextword = list_newword[1]
+    except IndexError:
+        pass
 
         #все слова выученны скрыть надпись на выбор темы
         #text = "Все слова данного расдела выученны!"
         #return render(request, 'topic/learn/start.html',{"text":text} )
-
+    #обновляем время
     ans = ""
     userform = UserForm()
     #если все слова выученны перенаправляем на выбор раздела
-
     if request.method == "POST":
         usword = request.POST.get("name")
+
+
         if usword == newword.translate:
             num = Userr.objects.get(id=curruser).balls
             Userr.objects.filter(id=curruser).update(balls=num + 10)
-            ans = "ВЕРНО"
+            ans = str("Верно")
             #
 
             st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
@@ -101,14 +105,8 @@ def start(request, idtopic, idword):
             context = {"wordone": nextword, "form": userform, "answer": ans}
             return render(request, 'topic/learn/start.html', context)
         else:
-            ans = "НЕВЕРНО"
-            #
+            ans = "Неверно"
 
-            st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
-            st.status = False
-            st.save()
-
-            #
             context = {"wordone": nextword, "form": userform, "answer": ans}
             return render(request, 'topic/learn/start.html', context)
 
