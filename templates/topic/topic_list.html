@@ -25,10 +25,10 @@
       </a>
 
       <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-        <li><a href="/" class="nav-link px-2 text-secondary">Главная</a></li>
+        <li><a href="/" class="nav-link px-2 text-white">Главная</a></li>
           {% if user.is_authenticated %}
           <li><a href="#" class="nav-link px-2 text-white">Статистика</a></li>
-          <li><a href="{% url 'topics' %}" class="nav-link px-2 text-white">Темы </a></li>
+          <li><a href="{% url 'topics' %}" class="nav-link px-2 text-secondary">Темы </a></li>
 {% endif %}
       </ul>
 
@@ -54,16 +54,16 @@
   </div>
 </header>
   <br>
-  <div style="margin-left: 1px !important;" class="row">
+  
+  <div style="margin-left: 200px !important;" class="row">
 
       {% for topic in topic_list %}
     <br>
           <div class="col-lg-4">
-        <svg class="bd-placeholder-img rounded-circle" width="140" height="140" role="img" aria-label="Placeholder: 140x140"  preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><image href="https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png" width="100%" height="100%" fill="#777"/></svg>
+           <h2>{{ topic.name }}</h2>
+        <svg  width="120" height="120" role="img" aria-label="Placeholder: 140x140"  preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><image href="{{topic.urls}}" width="100%" height="100%" fill="#777"/></svg>
 
-        <h2>{{ topic.name }}</h2>
-        <p>Some representative placeholder content for the three columns of text below the carousel. This is the first column.</p>
-        <p><a class="btn btn-secondary" href="{% url "topic_detail" pk=topic.pk %}">Учить слова</a></p>
+        <p><a style="margin-top: 20px" class="btn btn-secondary" href="{% url "topic_detail" pk=topic.pk %}">Учить слова</a></p>
       </div><!-- /.col-lg-4 -->
 
 {% endfor %}

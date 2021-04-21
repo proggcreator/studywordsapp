@@ -3,7 +3,7 @@ from django.db import models
 class Topic(models.Model):
     name = models.CharField("Тема", max_length = 30)
     description = models.TextField("Описание")
-    urls = models.SlugField(max_length = 160, unique = True)
+    urls = models.TextField()
 
     def __str__(self):
         return self.name
