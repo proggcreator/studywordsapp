@@ -17,6 +17,13 @@ import time
 def index(request):
     return render(request, "index.html")
 
+def mystat(request):
+    curruser = request.user.id
+    cwords =  State.objects.filter(id_user_id=curruser).filter(status = True).count()
+    x= Userr.objects.filter(id=curruser)[0]
+    cballs = x.balls
+    context = {"words_count": cwords, "balls_count": cballs}
+    return render(request, "topic/mystat.html",context)
 
 def topics(request,text = " "):
     user_au = User.objects.get(username=request.user)  # если новый пользователь добавляем в Userr
@@ -113,3 +120,46 @@ def start(request, idtopic, idword):
 
     context = {"wordone": newword, "form": userform, "answer": ans}
     return render(request, 'topic/learn/start.html', context)
+#
+#
+#
+def repeat(request, idtopic, idword):
+    endstudy = False
+    curruser = request.user.id
+    words_in_state_topic = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id = curruser)
+    #если только начал изучать тему
+    if words_in_state_topic.count() == 0:
+        return HttpResponseRedirect(reverse('topics', ))
+    list_newword = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id=curruser,state__status = True)
+    # обработка ошибки если последнее слово
+    try:
+        newword = list_newword[0]
+    except IndexError:
+        endstudy = True
+    #перенаправление для выбора темы когда все слова выученны
+    if endstudy == True :
+        return HttpResponseRedirect(reverse('topics',))
+    try:
+        nextword = list_newword[1]
+    except IndexError:
+        pass
+    ans = ""
+    userform = UserForm()
+    #если все слова выученны перенаправляем на выбор раздела
+    if request.method == "POST":
+        usword = request.POST.get("name")
+
+        if usword == newword.translate:
+            num = Userr.objects.get(id=curruser).balls
+            Userr.objects.filter(id=curruser).update(balls=num + 10)
+            ans = str("Верно")
+            context = {"wordone": nextword, "form": userform, "answer": ans}
+            return render(request, 'topic/learn/repeat.html', context)
+        else:
+            ans = "Неверно"
+            context = {"wordone": nextword, "form": userform, "answer": ans}
+            return render(request, 'topic/learn/repeat.html', context)
+
+
+    context = {"wordone": newword, "form": userform, "answer": ans}
+    return render(request, 'topic/learn/repeat.html', context)
