@@ -1,17 +1,12 @@
-from django.dispatch import receiver
-from django.contrib.auth.models import Group
+
 from django.contrib.auth.models import User
 from django.urls import reverse
-import datetime
-from allauth.account.models import EmailAddress
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from .forms import UserForm
-from django.http import Http404
-from django.shortcuts import get_list_or_404
 from .models import Topic, Word, Userr, State
 from django.views.generic.base import View
 from django.shortcuts import render, get_object_or_404
-import time
+
 
 
 def index(request):
@@ -51,7 +46,7 @@ def mainpage(request):
 
 
 class Words_list(View):
-    def __init__(self, idtopic, idword):
+    def __init__ (self, idtopic, idword):
         self.i = 1
         self.dictwords = Word.objects.raw('SELECT * FROM wordsapp_word WHERE id_topic_id = %s AND id > %s ',
                                           [idtopic, idword])
@@ -126,10 +121,10 @@ def start(request, idtopic, idword):
 def repeat(request, idtopic, idword):
     endstudy = False
     curruser = request.user.id
-    words_in_state_topic = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id = curruser)
+    words_in_state_topic = Word.objects.filter(state__id_user_id = curruser).filter(id_topic=idtopic)
     #если только начал изучать тему
     if words_in_state_topic.count() == 0:
-        return HttpResponseRedirect(reverse('topics', ))
+        return HttpResponseRedirect(reverse('topics' ))
     list_newword = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id=curruser,state__status = True)
     # обработка ошибки если последнее слово
     try:
