@@ -58,7 +58,6 @@ class Words_list(View):
 
 
 def start(request, idtopic, idword):
-    endstudy = False
     curruser = request.user.id
     words_in_state_topic = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id = curruser)
     #если только начал изучать тему
@@ -67,48 +66,41 @@ def start(request, idtopic, idword):
         for i in all_words_topic:
             State.objects.create(id_user_id=curruser,id_word_id=i.id,status=False)
 
-
-    list_newword = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id=curruser,state__status = False)
+    list_newword = Word.objects.filter(id_topic=idtopic).filter(id__gte=idword).filter(state__status = False,
+                                                                                       state__id_user_id=curruser)
     # обработка ошибки если последнее слово
     try:
         newword = list_newword[0]
     except IndexError:
-        endstudy = True
+        return HttpResponseRedirect(reverse('topics'))
     #перенаправление для выбора темы когда все слова выученны
-    if endstudy == True :
-        return HttpResponseRedirect(reverse('topics',))
-    try:
-        nextword = list_newword[1]
-    except IndexError:
-        pass
-
-        #все слова выученны скрыть надпись на выбор темы
-        #text = "Все слова данного расдела выученны!"
-        #return render(request, 'topic/learn/start.html',{"text":text} )
-    #обновляем время
     ans = ""
     userform = UserForm()
     #если все слова выученны перенаправляем на выбор раздела
     if request.method == "POST":
-        usword = request.POST.get("name")
-
+        usword = request.POST.get("translate")
 
         if usword == newword.translate:
             num = Userr.objects.get(id=curruser).balls
             Userr.objects.filter(id=curruser).update(balls=num + 10)
             ans = str("Верно")
             #
-
             st = State.objects.filter(id_word_id=newword.id).filter(id_user_id=curruser)[0]
             st.status = True
             st.save()
-
+            try:
+                nextword = list_newword[0]
+            except IndexError:
+                return HttpResponseRedirect(reverse('topics'))
             #
             context = {"wordone": nextword, "form": userform, "answer": ans}
             return render(request, 'topic/learn/start.html', context)
         else:
+            try:
+                nextword = list_newword[1]
+            except IndexError:
+                return HttpResponseRedirect(reverse('topics'))
             ans = "Неверно"
-
             context = {"wordone": nextword, "form": userform, "answer": ans}
             return render(request, 'topic/learn/start.html', context)
 
@@ -119,31 +111,28 @@ def start(request, idtopic, idword):
 #
 #
 def repeat(request, idtopic, idword):
-    endstudy = False
     curruser = request.user.id
     words_in_state_topic = Word.objects.filter(state__id_user_id = curruser).filter(id_topic=idtopic)
     #если только начал изучать тему
     if words_in_state_topic.count() == 0:
         return HttpResponseRedirect(reverse('topics' ))
-    list_newword = Word.objects.filter(id_topic=idtopic).filter(state__id_user_id=curruser,state__status = True)
+    list_newword = Word.objects.filter(id_topic=idtopic).filter(id__gte=idword).filter(state__id_user_id=curruser)
     # обработка ошибки если последнее слово
     try:
         newword = list_newword[0]
     except IndexError:
-        endstudy = True
-    #перенаправление для выбора темы когда все слова выученны
-    if endstudy == True :
         return HttpResponseRedirect(reverse('topics',))
-    try:
-        nextword = list_newword[1]
-    except IndexError:
-        pass
+    #перенаправление для выбора темы когда все слова выученны
     ans = ""
     userform = UserForm()
     #если все слова выученны перенаправляем на выбор раздела
     if request.method == "POST":
-        usword = request.POST.get("name")
-
+        usword = request.POST.get("translate")
+        # проверка на последнее слово
+        try:
+            nextword = list_newword[1]
+        except IndexError:
+            return HttpResponseRedirect(reverse('topics' ))
         if usword == newword.translate:
             num = Userr.objects.get(id=curruser).balls
             Userr.objects.filter(id=curruser).update(balls=num + 10)
