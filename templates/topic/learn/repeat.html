@@ -12,16 +12,10 @@
 <body>
  <div  class="container">
             <div  id="CountDownTimer" data-timer="60" style="margin-top: 30px;
-            margin-left: 850px; width: 500px; height: 200px;"></div>
+            margin-left: 850px; width: 450px; height: 200px;"></div>
 
  </div>
- <div id="error-message">{{answer}}</div>
-<script>
-     $('#error-message').show();
- setTimeout(function(){
-    $('#error-message').hide();
- }, 1000);
-</script>
+
  <script>
             $("#DateCountdown").TimeCircles();
             $("#CountDownTimer").TimeCircles({ time: { Days: { show: false }, Hours: { show: false },Minutes: { show: false } }});
@@ -67,19 +61,10 @@ function countdownComplete(unit, value, total){
 
         </script>
 
-<div style="margin-left: 550px;">
+<div style="margin-left: 500px;">
+
  <h1 style="margin-left: 100px;">{{wordone.name}}</h1>
-<!-- переход на следующее слово и отправка данных формы-->
-<form style="size: 100px;font-size: 20px;" method="POST" name = "gettime" action="{% url "repeat" idtopic=wordone.id_topic_id idword=wordone.id %}">
-     {% csrf_token %}
-    <table>
-    {{ form.as_table}}
-
-    </table>
-    <input  type="submit"  style="margin-left: 70px;width: 20%; height: 50px; margin-top:20px;font-size: 20px; " value="Проверить" >
-  </form>
-
-<div style="margin-top: 30px; font-size: 20px;">
+    <div style="margin-top: 30px; font-size: 20px;">
 
 
 <br>
@@ -92,6 +77,17 @@ function countdownComplete(unit, value, total){
 {{wordone.example}}
 
     </div>
+<!-- переход на следующее слово и отправка данных формы-->
+<form style="size: 100px;font-size: 20px;margin-top:50px;" method="POST" name = "gettime" action="{% url "repeat" idtopic=wordone.id_topic_id idword=wordone.id %}">
+     {% csrf_token %}
+    <table>
+    {{ form.as_table}}
+
+    </table>
+    <input  type="submit"  style="margin-left: 70px;width: 20%; height: 50px; margin-top:50px;font-size: 20px; " value="Проверить" >
+  </form>
+
+
 
  </div>
 

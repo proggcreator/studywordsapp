@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'studywords.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wordsapp',
+        'NAME': 'englword',
         'USER': 'admin',
         'PASSWORD': '14104924',
         'HOST': 'localhost',

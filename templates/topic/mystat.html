@@ -1,50 +1,42 @@
+<!--
+Вывод статистики авторизованного пользователя
+*Разработал студент А-08-17 Шибитов Д.В
+-->
 <!DOCTYPE html>
 {% load i18n %}
 {% load account %}
 <html lang="ru">
 <head>
      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
-
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
-
-  <div id="error-message">{{text}}</div>
-<script>
-     $('#error-message').show();
- setTimeout(function(){
-    $('#error-message').hide();
- }, 2000);
-</script>
+<!--Отображение шапки-->
 <header class="p-3 bg-dark text-white">
   <div class="container">
+  <!-- Подключение шаблонов bootstrap -->
     <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
       <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
         <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
       </a>
-
       <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
         <li><a href="/" class="nav-link px-2 text-white">Главная</a></li>
           {% if user.is_authenticated %}
           <li><a href="{% url 'mystat' %}" class="nav-link px-2 text-secondary">Статистика</a></li>
           <li><a href="{% url 'topics' %}" class="nav-link px-2 text-white">Темы </a></li>
-{% endif %}
+          {% endif %}
       </ul>
-
+      <!--Форма для поика неизвестного слова в переводчике-->
       <form action="https://translate.yandex.ru/" target="_blank" class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
         <input type="search" class="form-control form-control-dark" placeholder="Search..." >
-
       </form>
 
       <div class="text-end">
           {% if user.is_authenticated %}
           <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-
-
-        <li> <button type="button" class="btn btn-outline-light me-2" onClick=location.href="{% url 'account_logout' %}">Выход</button></li>
-
-      </ul>
+            <li> <button type="button" class="btn btn-outline-light me-2" onClick=location.href="{% url 'account_logout' %}">Выход</button></li>
+          </ul>
           {% else %}
         <button type="button" class="btn btn-outline-light me-2" onClick=location.href="{% url 'account_login' %}">Вход</button>
         <button type="button" class="btn btn-warning" onClick=location.href="{% url 'account_signup' %}">Регистрация</button>
@@ -53,17 +45,16 @@
     </div>
   </div>
 </header>
-
+<!--Вывод количесва изученных слов и баллов-->
 <div style="margin-top:60px;margin-left: 600px;" class="col-lg-4">
     <h1>{{ user.username }}</h1>
-           <h2>{{ topic.name }}</h2>
-        <svg  width="120" height="120" role="img" aria-label="Placeholder: 140x140"  preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><image href="#" width="100%" height="100%" fill="#777"/></svg>
-
-<p style="margin-top: 10px;">Выученно слов</p>
-    {{ words_count }}
-    <p>Количество баллов</p>
-    {{ balls_count }}
-      </div>
+    <h2>{{ topic.name }}</h2>
+    <svg  width="120" height="120" role="img" aria-label="Placeholder: 140x140"  preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><image href="https://www.flaticon.com/svg/vstatic/svg/25/25634.svg?token=exp=1620654269~hmac=a2190e47ecaf9f3f91c65d6d1e555856" width="100%" height="100%" fill="#777"/></svg>
+    <div style=" font-size: 20px; margin-top: 20px; ">Выученно слов</div>
+    <a style="margin-left:70px;font-size: 20px;">{{ words_count }}</a>
+    <div style="font-size: 20px;margin-top: 20px;">Количество баллов</div>
+    <a style="margin-left:70px;font-size: 20px;">{{ balls_count }}</a>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
 
